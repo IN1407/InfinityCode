@@ -1,0 +1,7 @@
+# Core runtime dependencies. Optional local-model and tool integrations are
+# installed separately only when selected in InfinityCode.
+fastapi>=0.115
+uvicorn[standard]>=0.30
+openai>=1.0
+requests>=2.31
+jinja2>=3.1
