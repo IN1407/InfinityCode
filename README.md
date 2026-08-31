@@ -60,6 +60,8 @@ values are account-specific: do not commit the API key or paste it into issues.
 
 This route uses the same OpenAI-compatible chat-completions interface as the
 other hosted providers, so it also supports compatible local servers.
+DeepSeek build a html snake game that increases speed each time you score
+link: [Snake Game by DeepSeek in InfinityCode](https://github.com/IN1407/InfinityCode-first-vibe-coded-project) 
 
 ## Manual start
 
