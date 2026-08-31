@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>InfinityCode</title>
+<link rel="stylesheet" href="/static/style.css?v=background-brightness-5">
+</head>
+<body>
+
+<!-- two layers so one image cross-fades into the next -->
+<div class="slideshow" id="slideshow">
+  <div class="bg-layer" id="bgLayer1"></div>
+  <div class="bg-layer" id="bgLayer2"></div>
+</div>
+
+<div class="app" id="app" hidden>
+
+  <aside class="rail">
+    <div class="brand">
+      <span class="brand-mark">∞</span>
+      <h1>Infinity<span>Code</span></h1>
+    </div>
+
+    <button class="btn btn-gold" id="newChat">+ New chat</button>
+
+    <div class="rail-scroll">
+
+      <section class="rail-block">
+        <h2 class="rail-title">Chats</h2>
+        <ul class="list" id="chatList"></ul>
+      </section>
+
+      <section class="rail-block" id="agentBlock" hidden>
+        <h2 class="rail-title">Agents in this chat</h2>
+        <ul class="list" id="agentList"></ul>
+      </section>
+
+      <section class="rail-block">
+        <div class="rail-title-row">
+          <h2 class="rail-title">System</h2>
+          <button class="switch" id="telemetryToggle" type="button"
+                  aria-pressed="true" title="Turn system scanning on or off"><i></i></button>
+        </div>
+        <p class="telemetry-off-note" id="telemetryOff" hidden>Scanning is off.</p>
+        <div class="frame telemetry" id="telemetry">
+          <div class="gauge" data-key="cpu">
+            <div class="gauge-head"><span class="gauge-name">CPU</span><span class="gauge-val">—</span></div>
+            <div class="bar"><i></i></div>
+            <div class="gauge-sub"></div>
+          </div>
+          <div class="gauge" data-key="ram">
+            <div class="gauge-head"><span class="gauge-name">RAM</span><span class="gauge-val">—</span></div>
+            <div class="bar"><i></i></div>
+            <div class="gauge-sub"></div>
+          </div>
+          <div class="gauge" data-key="gpu">
+            <div class="gauge-head"><span class="gauge-name">GPU</span><span class="gauge-val">—</span></div>
+            <div class="bar"><i></i></div>
+            <div class="gauge-sub"></div>
+          </div>
+          <div class="gauge" data-key="vram">
+            <div class="gauge-head"><span class="gauge-name">VRAM</span><span class="gauge-val">—</span></div>
+            <div class="bar"><i></i></div>
+            <div class="gauge-sub"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="rail-block">
+        <h2 class="rail-title">Background</h2>
+        <div class="bg-actions">
+          <button class="btn btn-ghost" id="browseImages">Browse image</button>
+          <button class="btn btn-ghost" id="clearBg">None</button>
+        </div>
+        <div class="opacity-row">
+          <label for="bgOpacity">Image brightness</label>
+          <input type="range" id="bgOpacity" min="0" max="100" step="1" value="100">
+          <span id="bgOpacityVal">100%</span>
+        </div>
+        <div class="thumbs" id="thumbs"></div>
+      </section>
+
+    </div>
+
+    <button class="btn btn-ghost rail-foot" id="openSettings">Settings</button>
+  </aside>
+
+  <main class="stage">
+    <header class="topbar">
+      <div class="topbar-text">
+        <h2 id="stageTitle">InfinityCode</h2>
+        <p id="stageSub"></p>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost" id="backToChat" hidden>Back to chat</button>
+        <button class="btn btn-ghost" id="rawBtn" type="button" disabled
+                title="Open the exact requests this chat sends the model, and its replies as they arrive">Raw</button>
+      </div>
+    </header>
+
+    <section class="transcript" id="transcript"></section>
+
+    <form class="composer frame" id="composer">
+      <textarea id="promptBox" rows="1" placeholder="Ask InfinityCode…"></textarea>
+      <div class="composer-side">
+        <button type="submit" class="btn btn-gold" id="sendBtn">Send</button>
+        <button type="button" class="btn btn-ghost" id="stopBtn" hidden>Stop</button>
+      </div>
+    </form>
+  </main>
+</div>
+
+<!-- ------------------------------------------------ setup walk-through -->
+<div class="overlay" id="setup">
+  <div class="frame panel setup-panel">
+    <header class="panel-head">
+      <h2>Set up InfinityCode</h2>
+      <p id="setupStep">Starting…</p>
+    </header>
+
+    <pre class="printed text-block" id="setupPrinted" hidden></pre>
+
+    <div class="panel-body">
+      <label class="field-label" id="setupLabel"></label>
+      <pre class="prompt-text text-block" id="setupPrompt"></pre>
+      <div id="setupControl" class="control"></div>
+      <p class="hint" id="setupHint"></p>
+    </div>
+
+    <footer class="panel-foot">
+      <span class="err" id="setupErr"></span>
+      <button class="btn btn-gold" id="setupNext" disabled>Continue</button>
+    </footer>
+  </div>
+</div>
+
+<!-- ------------------------------------------------------- settings ---- -->
+<div class="overlay" id="settings" hidden>
+  <div class="frame panel">
+    <header class="panel-head">
+      <h2>Settings</h2>
+      <p>What this session is running with.</p>
+    </header>
+    <div class="panel-body">
+      <p class="warn" id="settingsWarn" hidden></p>
+      <div class="summary text-block" id="settingsSummary"></div>
+    </div>
+    <footer class="panel-foot">
+      <button class="btn btn-ghost" id="closeSettings">Close</button>
+      <button class="btn btn-ghost" id="rerunSetup">Run setup again</button>
+    </footer>
+  </div>
+</div>
+
+
+<!-- ------------------------- change formatting without resetting chat --- -->
+<div class="overlay" id="chatTemplatePicker" hidden>
+  <div class="frame panel">
+    <header class="panel-head">
+      <h2>Change chat template</h2>
+      <p>The next prompt reformats the complete retained conversation. History is kept.</p>
+    </header>
+    <div class="panel-body">
+      <div class="control">
+        <select id="chatTemplateSelect"></select>
+        <div class="row" id="chatTemplateFileRow" hidden>
+          <input type="text" id="chatTemplatePath" placeholder="no Jinja template chosen yet">
+          <button class="btn btn-ghost" id="chatTemplateBrowse">Choose Jinja file</button>
+        </div>
+      </div>
+      <p class="hint">Model default preserves existing behavior. Overrides must match the model family.</p>
+      <p class="err" id="chatTemplateErr"></p>
+    </div>
+    <footer class="panel-foot">
+      <button class="btn btn-ghost" id="chatTemplateCancel">Cancel</button>
+      <button class="btn btn-gold" id="chatTemplateSave">Use for next prompt</button>
+    </footer>
+  </div>
+</div>
+
+
+<!-- ------------------------------- which part of a model to change ------ -->
+<div class="overlay" id="picker" hidden>
+  <div class="frame panel">
+    <header class="panel-head">
+      <h2 id="pickerTitle">Change</h2>
+      <p>Only the boxes you tick are asked again. Everything else is kept.</p>
+    </header>
+    <div class="panel-body">
+      <p class="hint" id="pickerNote"></p>
+      <div class="checks" id="pickerList"></div>
+    </div>
+    <footer class="panel-foot">
+      <button class="btn btn-ghost" id="pickerCancel">Cancel</button>
+      <button class="btn btn-gold" id="pickerGo" disabled>Change these</button>
+    </footer>
+  </div>
+</div>
+
+<!-- ---------------------------------- what a change knocks on to -------- -->
+<div class="overlay" id="preflight" hidden>
+  <div class="frame panel">
+    <header class="panel-head">
+      <h2>Before this change</h2>
+      <p id="preflightWhat"></p>
+    </header>
+    <div class="panel-body">
+      <p class="hint">These answers come after it. They can be sent again as they
+        are, or you can be asked for each one.</p>
+      <ul class="reuse-list text-block" id="preflightList"></ul>
+      <p class="warn" id="preflightWarn" hidden></p>
+    </div>
+    <footer class="panel-foot">
+      <button class="btn btn-ghost" id="preflightCancel">Cancel</button>
+      <button class="btn btn-ghost" id="preflightAsk">Ask me for each</button>
+      <button class="btn btn-gold" id="preflightReuse">Keep them</button>
+    </footer>
+  </div>
+</div>
+
+<!-- ------------------------------------------- passphrase for the keys -- -->
+<div class="overlay" id="vault" hidden>
+  <div class="frame panel">
+    <header class="panel-head">
+      <h2 id="vaultTitle">Passphrase</h2>
+      <p id="vaultWhy"></p>
+    </header>
+    <div class="panel-body">
+      <div class="control">
+        <input type="password" id="vaultPass" placeholder="passphrase">
+        <input type="password" id="vaultPass2" placeholder="type it again" hidden>
+      </div>
+      <p class="hint" id="vaultHint"></p>
+    </div>
+    <footer class="panel-foot">
+      <span class="err" id="vaultErr"></span>
+      <button class="btn btn-ghost" id="vaultSkip">Don't save keys</button>
+      <button class="btn btn-gold" id="vaultGo">Unlock</button>
+    </footer>
+  </div>
+</div>
+
+<script src="/static/script.js?v=background-brightness-5"></script>
+</body>
+</html>

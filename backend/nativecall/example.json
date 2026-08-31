@@ -1,0 +1,21 @@
+[
+{
+    "provider": "z-ai",
+    "model": "z-ai/glm-5.2",
+    "mode": "subagent", 
+    "temp": "0.2",
+    "context": "",
+    "max tokens": "",
+    "reasoning": ""
+
+},
+{
+
+        "tool": "command",
+    "token": "<command>content</command>"
+},
+{
+        "tool": "readFile",
+    "token": "<readFile>content</readFile>"
+}
+]
