@@ -3,7 +3,8 @@
 InfinityCode is a local, browser-based coding agent. It runs a FastAPI backend
 from this project folder, streams model responses to a vanilla HTML/CSS/JS
 interface, and can use the tools you enable for a chat: file reads and edits,
-commands, web search, browser automation, MCP servers, and subagents.
+commands, web search, browser automation, MCP servers, and subagents. 
+(only works in mac and linux)
 
 GitHub: [@IN1407](https://github.com/IN1407) · [InfinityCode](https://github.com/IN1407/InfinityCode)
 
